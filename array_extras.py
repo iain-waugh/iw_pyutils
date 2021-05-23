@@ -1,13 +1,16 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Extend the standard Numpy array manipulation routines
+Extend the standard Numpy array manipulation routines,
+particularly for 2D array operations.
 
-Copyright Iain Waugh, iwaugh@gmail.com
+Copyright (C) 2021 - Iain Waugh, iwaugh@gmail.com
 """
 
 from __future__ import print_function, division
 import numpy as np
 
+__version__ = "1.0.0"
 
 def shift_2d(arr, shifts, stride=0):
     """
@@ -27,11 +30,11 @@ def shift_2d(arr, shifts, stride=0):
 
     stride
         How many of the previous rows/columns to repeat
-        
+
         0 = fill with zeros (default)
-        
+
         1 = copy the last row/column
-        
+
         2 = copy the last 2 rows/columns (good for working with Bayer paterns)
 
     Returns
@@ -88,7 +91,7 @@ def shift_2d(arr, shifts, stride=0):
     return new_arr
 
 
-def add_border(arr, border_width, stride=0):
+def add_border_2d(arr, border_width, stride=0):
     """
     Expand the border of a Numpy array by replicating edge values
 
@@ -102,11 +105,11 @@ def add_border(arr, border_width, stride=0):
 
     stride : integer
         How many of the previous rows/columns to repeat
-        
+
         0 = fill with zeros (default)
-        
+
         1 = copy the last row/column
-        
+
         2 = copy the last 2 rows/columns (good for working with Bayer paterns)
 
     Returns
@@ -117,27 +120,31 @@ def add_border(arr, border_width, stride=0):
     new_y = arr.shape[1] + border_width * 2
     new_dtype = arr.dtype
     new_arr = np.zeros((new_x, new_y), dtype=new_dtype)
- 
+
     new_arr[border_width:-border_width, border_width:-border_width] = arr
     if stride > 0:
-         # We want to copy data from existing rows/columns to into the new border
+        # We want to copy data from existing rows/columns to into the new border
         quot = border_width // stride
         rem = border_width % stride
         if rem != 0:
             quot += 1
 
         # Fill the top
-        arr_t = new_arr[border_width:border_width+stride,:]
-        new_arr[:border_width,] = np.tile(arr_t, (quot,1))[:border_width,:]
+        arr_t = new_arr[border_width : border_width + stride, :]
+        new_arr[:border_width,] = np.tile(
+            arr_t, (quot, 1)
+        )[:border_width, :]
         # Fill the botton
-        arr_b = new_arr[-(border_width+stride):-border_width,:]
-        new_arr[-border_width:,] = np.tile(arr_b, (quot,1))[:border_width,:]
+        arr_b = new_arr[-(border_width + stride) : -border_width, :]
+        new_arr[-border_width:,] = np.tile(
+            arr_b, (quot, 1)
+        )[:border_width, :]
         # Fill left
-        arr_l = new_arr[:, border_width:border_width+stride]
-        new_arr[:,:border_width] = np.tile(arr_l, (1,quot))[:,:border_width]
+        arr_l = new_arr[:, border_width : border_width + stride]
+        new_arr[:, :border_width] = np.tile(arr_l, (1, quot))[:, :border_width]
         # Fill the right
-        arr_b = new_arr[:,-(border_width+stride):-border_width]
-        new_arr[:,-border_width:] = np.tile(arr_b, (1,quot))[:,:border_width]
+        arr_b = new_arr[:, -(border_width + stride) : -border_width]
+        new_arr[:, -border_width:] = np.tile(arr_b, (1, quot))[:, :border_width]
 
     return new_arr
 
@@ -146,27 +153,33 @@ if __name__ == "__main__":
     aRow, aCol = (6, 6)  #  Number of rows and columns
     arr = np.arange(1, aRow * aCol + 1).astype("uint16").reshape(aRow, aCol)
 
-    # n1 = shift_2d(arr, (1, 0), 1)
-    # s1 = shift_2d(arr, (-1, 0), 1)
-    # w1 = shift_2d(arr, (0, 1), 1)
-    # e1 = shift_2d(arr, (0, -1), 1)
+    print("Original array\n", arr)
 
-    # print("North 1\n", n1)
-    # print("South 1\n", s1)
-    # print("East 1\n", e1)
-    # print("West 1\n", w1)
+    n1 = shift_2d(arr, (1, 0), 1)
+    s1 = shift_2d(arr, (-1, 0), 1)
+    w1 = shift_2d(arr, (0, 1), 1)
+    e1 = shift_2d(arr, (0, -1), 1)
 
-    # n2 = shift_2d(arr, (2, 0), 2)
-    # s2 = shift_2d(arr, (-2, 0), 2)
-    # w2 = shift_2d(arr, (0, 2), 2)
-    # e2 = shift_2d(arr, (0, -2), 2)
+    print("North 1\n", n1)
+    print("South 1\n", s1)
+    print("East 1\n", e1)
+    print("West 1\n", w1)
 
-    # print("North 2\n", n2)
-    # print("South 2\n", s2)
-    # print("East 2\n", e2)
-    # print("West 2\n", w2)
-    
-    # print("Adding a border of 2 rows/columns, copying data from the outermost row/column")
-    # print(add_border(arr,2,1))
-    print("Adding a border of 2 rows/columns, copying data from the 2x outermost rows/columns")
-    print(add_border(arr,3,2))
+    n2 = shift_2d(arr, (2, 0), 2)
+    s2 = shift_2d(arr, (-2, 0), 2)
+    w2 = shift_2d(arr, (0, 2), 2)
+    e2 = shift_2d(arr, (0, -2), 2)
+
+    print("North 2\n", n2)
+    print("South 2\n", s2)
+    print("East 2\n", e2)
+    print("West 2\n", w2)
+
+    print(
+        "Adding a border of 2 rows/columns, copying data from the outermost row/column"
+    )
+    print(add_border_2d(arr, 2, 1))
+    print(
+        "Adding a border of 3 rows/columns, copying data from the 3x outermost rows/columns"
+    )
+    print(add_border_2d(arr, 3, 3))
